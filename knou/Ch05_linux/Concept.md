@@ -1,44 +1,92 @@
-# UNIX 시스템 - 5강 요약
+리눅스 시스템의 시작과 종료에 대해 마크다운으로 정리하겠습니다.
 
-## 운영체제의 부팅
+# 리눅스 시스템 시작과 종료
+
+## 1. 운영체제의 부팅
+
+### 부팅 과정
 1. ROM BIOS
-2. MBR(Master Boot Record)
-   - GRUB(Grand Unified Bootloader)
+   - BIOS가 x86 시스템의 하드웨어 초기화
+   
+2. MBR (Master Boot Record)
+   - GRUB 부트로더 실행
+   
 3. initramfs
-   - `/boot/vmlinuz-<kernel-version>`
-   - initramfs
-4. 커널의 실행
-   - 장치 드라이버 로드
-   - 루트 파일시스템 마운트
-5. systemd 프로세스 실행
-   - `/lib/systemd/systemd`
+   - `/boot/vmlinuz-<kernel-version>` 커널 이미지 로드
+   - 초기 RAM 파일시스템 구성
 
-## 초기화 데몬
-- System V init
-- Upstart (Ubuntu 2006, RHEL 6)
-- systemd (2011 Fedora, RHEL 7, SUSE, Ubuntu 16.04)
+4. 커널 실행
+   - 하드웨어 감지, 드라이버 초기화
+   - 루트(/) 파일시스템 마운트
 
-## systemd 프로세스
-- PID 1 프로세스
-- 다양한 유닛 타입 관리
-  - service, target, device, mount, path, socket, snapshot 등
+5. systemd 실행
+   - `/lib/systemd/systemd` 프로세스 시작
+   - 시스템 초기화 담당
 
-## 런레벨 및 타깃
-- 0-6번 런레벨에 해당하는 타깃 유닛
-- `systemctl get-default`, `systemctl set-default <name.target>` 명령 사용
+## 2. 초기화 데몬
 
-## systemctl 명령
-- `start`, `stop`, `reload`, `restart`, `status`, `enable`, `disable`, `is-active`, `is-enabled` 등
-- 서비스 관리를 위한 다양한 옵션 제공
+### 초기화 시스템 종류
+1. System V init
+   - 전통적인 런레벨 기반 초기화 시스템
 
-## 시스템 종료
-- `systemctl halt`, `systemctl poweroff`, `systemctl reboot` 등의 명령 사용
-- `shutdown` 명령으로 종료 시간 지정 가능
+2. Upstart
+   - Ubuntu 2006, RHEL 6에서 사용
 
-## 데스크톱
-- GUI 기반 운영체제 (X, GNOME, KDE 등)
-- `yum -y groupinstall GNOME` 등으로 데스크톱 환경 설치 가능
+3. systemd
+   - 2011년 Fedora에서 시작
+   - 현재 대부분의 리눅스 배포판이 채택
+   - PID 1 프로세스로 실행
 
-추가 정보:
-- systemd 프로세스의 세부적인 유닛 타입과 설정 파일 위치에 대한 설명이 더 필요할 수 있습니다.
-- 데스크톱 환경 선택과 관련된 추가 정보를 제공할 수 있습니다.
+### systemd 유닛 타입
+- `.service`: 서비스 유닛
+- `.target`: 시스템 상태/런레벨
+- `.device`: 장치 유닛
+- `.mount`: 마운트 포인트
+- `.socket`: 소켓 유닛
+- `.path`: 경로 감시
+- `.snapshot`: 시스템 스냅샷
+
+### 런레벨과 타깃
+| 런레벨 | 타깃 | 설명 |
+|--------|------|------|
+| 0 | poweroff.target | 시스템 종료 |
+| 1 | rescue.target | 단일 사용자 모드 |
+| 2-4 | multi-user.target | 다중 사용자 모드 |
+| 5 | graphical.target | 그래픽 모드 |
+| 6 | reboot.target | 재부팅 |
+
+## 3. 시스템 종료
+
+### 종료 명령어
+```bash
+systemctl halt      # 시스템 중지
+systemctl poweroff  # 전원 끄기
+systemctl reboot    # 재부팅
+systemctl suspend   # 절전 모드
+systemctl hibernate # 최대 절전 모드
+```
+
+### shutdown 명령
+```bash
+shutdown [options] time [message]
+# 예시
+shutdown -r +10    # 10분 후 재부팅
+shutdown -h now    # 즉시 종료
+shutdown -P +10    # 10분 후 전원 끄기
+```
+
+## 4. 데스크톱 환경
+
+### 주요 데스크톱
+1. GNOME
+   - Red Hat 기본 데스크톱
+   - 직관적인 사용자 인터페이스
+
+2. KDE
+   - MS Windows와 유사한 인터페이스
+   - `yum -y groupinstall` 명령으로 설치 가능
+
+### 시스템 관리
+- 웹 콘솔(cockpit) 사용 가능
+- `http://localhost:9090`으로 접근
+- root 계정으로 로그인하여 시스템 관리 가능
